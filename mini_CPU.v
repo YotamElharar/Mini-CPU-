@@ -1,7 +1,7 @@
 // alu module
 
 module alu_operation_(result,parity,carry,zero,a,b,opcode);
-input [15:0]a,b;  //******
+input [15:0]a,b;  
 input [2:0]opcode;
 output reg [15:0]result;
 output parity,carry,zero;
@@ -109,7 +109,7 @@ reg [15:0]IR,in_mem; //Instruction register, data out/in of the of the ram memor
 wire [15:0]out_mem;
 wire [15:0]AC_wire;
 reg [15:0]DR;
-reg [11:0]operation; //*********************
+reg [11:0]operation; 
 reg [11:0]PC; // PC register
 reg [11:0]AR,pr_PC; //Address register, previous data of PC register 
 reg IEN,FGI,FGO; // Interrupt enable, input & output flags
