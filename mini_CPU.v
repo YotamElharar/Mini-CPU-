@@ -15,7 +15,7 @@ always @(a,b,opcode) begin
         3'b101: result=a-b;  //SUB
         3'b110: result=~(a|b); //NOR
         3'b111: result=~(a&b); //NAND
-        
+        default: result = 16'd0;
        endcase
 	 
 end
@@ -78,7 +78,7 @@ module cpu_counter_(counter,clk,SC,rst);
 input clk,SC,rst;
 output reg[15:0]counter;
 initial begin
-counter=16'b1111111111111111;
+counter = 16'hFFFF; // start value
 end
 always @(posedge clk or posedge rst) begin
     if (rst) begin
@@ -102,10 +102,10 @@ output SC;
 reg control_SC;
 reg stop_SC=1'b1;
 reg [1:0]state;
-reg [15:0]a, b; // inputs of alu   **********
-reg we;  //write enable of the memory
-reg I,E; //decodes the type of instruction, carry register
-reg [15:0]IR,in_mem; //Instruction register, data out/in of the of the ram memory
+	reg [15:0]a, b; // inputs of the alu  
+reg we;  //memory write enable
+reg I,E; //decodes the instruction type, carry register
+reg [15:0]IR,in_mem; //Instruction register, data out/in of the ram memory
 wire [15:0]out_mem;
 wire [15:0]AC_wire;
 reg [15:0]DR;
@@ -115,11 +115,12 @@ reg [11:0]AR,pr_PC; //Address register, previous data of PC register
 reg IEN,FGI,FGO; // Interrupt enable, input & output flags
 reg [7:0]INPR,OUTR; // Input & output registers
 integer c=2'b00;
+	
 ram_memory_ ram1(out_mem,in_mem,AR,AR,we,clk,rst); 
 alu_operation_ alu1(AC_wire,parity,carry,zero,a,b,opcode);
+	
 initial begin
 PC=12'd0;
-//AC=16'd0;
 end
 
 always @(posedge clk) begin
@@ -139,12 +140,13 @@ case(state)
  if(rst) begin
  PC<=12'd0;
  end
+	
  if (counter>16'd3) begin
   if(opcode==3'b111) begin  // Register-reference instruction / Input-Output instruction
       operation<=AR;
 		if(I==1'b0) begin   // Register-reference instruction (7xxx)
         if(operation==12'h001) begin          //7001 - HLT - halt computer
-        stop_SC=1'b0;     //*********
+        stop_SC=1'b0;    
 		  end else if(operation==12'h002) begin //7002 - SZE - skip next instruction if carry is 0
 		  if (!control_SC) begin
         PC<=(E==1'b0) ? PC+1:PC;
@@ -289,7 +291,7 @@ always @(counter) begin
   16'd0: begin            //FETCH
         AR<=PC; 
 		  in_mem<=16'd0; //for read mode, in_mem(data in) don't care  
-		  pr_PC<=PC; //**** Save the initial PC value
+		  pr_PC<=PC; //keep the initial PC value
 		  we<=1'b0; //read mode
 		  end
   16'd1: begin
@@ -354,3 +356,4 @@ end
  #5000 $stop;
 end
 endmodule
+
